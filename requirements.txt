@@ -1,0 +1,11 @@
+numpy
+scipy
+xarray
+netCDF4
+pandas
+matplotlib
+gsw
+AMOCatlas
+pytest
+pytest-cov     # coverage:  pytest --cov=correlation_trends
+ruff           # formatter (ruff format) + linter (ruff check)
