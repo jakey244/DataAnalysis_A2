@@ -65,7 +65,6 @@ def fit_trend(t: ArrayLike, x: ArrayLike) -> tuple[float, float]:
     slope, intercept = np.polyfit(np.asarray(t, float), np.asarray(x, float), 1)
     return float(slope), float(intercept)
 
-
 def trend_with_significance(t: ArrayLike, x: ArrayLike, dt: float) -> TrendResult:
     """Slope, its standard error, ``slope/SE``, and autocorrelation-aware p-values.
 
@@ -98,9 +97,35 @@ def trend_with_significance(t: ArrayLike, x: ArrayLike, dt: float) -> TrendResul
     much the fitted slope would wobble on resampling -- not the scatter of the
     data about the line. Significant at 95% means ``|slope| > ~1.96 * SE``.
     """
-    # slope, intercept = fit_trend(t, x)
-    # resid = x - (slope * t + intercept)
-    # OLS slope SE:  sqrt( sum(resid**2)/(N-2) / sum((t - t.mean())**2) )
-    # effective sample size from the residuals:  n_eff = effective_dof(resid, dt)
-    # se_eff = se * sqrt(N / n_eff);  t = slope/se;  p = 2 * stats.t.sf(|t|, dof)
-    raise NotImplementedError("trend_with_significance")
+    try:
+        x = x.values    
+    except:
+        print("Not xarray format")
+    notnan = np.isfinite(x)
+    x = x[notnan]
+    t = t[notnan]
+    N = x.size
+    slope, intercept = fit_trend(t, x)
+    #print(slope,intercept)
+    resid = x - (slope * t + intercept)
+    #print(resid)
+    N_eff = effective_dof(resid, dt)
+    stderr = np.sqrt( np.sum(resid**2)/(N-2) / np.sum((t - t.mean())**2) )
+    effective_stderr = stderr * np.sqrt(N / N_eff)
+    t_naive = slope/stderr
+    t_eff = slope/effective_stderr
+    p_naive = 2 * stats.t.sf(np.abs(t_naive), N_eff * 2)
+    p_eff = 2 * stats.t.sf(np.abs(t_eff), N_eff)
+
+    res = TrendResult(
+        slope = slope,
+        intercept = intercept,
+        se = stderr,
+        se_eff = effective_stderr,
+        p_naive = p_naive,
+        p_eff = p_eff,
+        n_eff = N_eff,
+        t_naive = t_naive,
+        t_eff = t_eff
+    )
+    return(res)

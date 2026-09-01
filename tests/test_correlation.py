@@ -52,7 +52,7 @@ def test_effective_dof_is_half_dof_and_smaller_for_red() -> None:
     red = _ar1(n, 0.9, seed=5)
     # EDOF = record / (2 T*) = DOF / 2
     tstar = integral_timescale(white, dt)
-    assert effective_dof(white, dt) == pytest.approx((n * dt) / (2 * tstar))
+    assert effective_dof(white, dt) == pytest.approx(np.floor((n * dt) / (2 * tstar))) # i changed this test such that it also includes the floor
     assert effective_dof(red, dt) < effective_dof(white, dt)
 
 

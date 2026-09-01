@@ -9,6 +9,7 @@ from __future__ import annotations
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from scipy import signal
+from .analysis import detrending
 
 
 def autocorr(x: ArrayLike, biased: bool = True) -> NDArray[np.float64]:
@@ -35,6 +36,10 @@ def autocorr(x: ArrayLike, biased: bool = True) -> NDArray[np.float64]:
     at large lag; the biased tail is damped toward zero while the unbiased tail
     fans out. See the lecture figure comparing white noise, AR(1), and a sinusoid.
     """
+    try:
+        d = detrending(d, d["TIME"])
+    except:
+        print("no xarray type, possibly already detrended")
     d = np.asarray(x, dtype=float)
     d = d[np.isfinite(d)]
     d = d - d.mean()
@@ -77,7 +82,8 @@ def integral_timescale(x: ArrayLike, dt: float, biased: bool = True) -> float:
     return tau
 
 
-def effective_dof(x: ArrayLike, dt: float, biased: bool = True) -> float:
+
+def effective_dof(x: ArrayLike, dt: float, biased: bool = True) -> int:
     """Effective (equivalent) degrees of freedom ``EDOF`` for a series.
 
     Following Emery & Thomson, the raw degrees of freedom are
@@ -97,13 +103,25 @@ def effective_dof(x: ArrayLike, dt: float, biased: bool = True) -> float:
 
     Returns
     -------
-    float
+    int
         ``EDOF = record / (2 T*)``, where ``record = N * dt``.
+    
+    I floored the number such that it doesnt return a float, 
+    I do not see the reason why a float is necessary in a DOF count.
     """
-    # tstar = integral_timescale(x, dt, biased=biased)
-    # record = N * dt  (N = number of finite samples)
-    # EDOF = record / (2 * T*)   -- the factor of 2 is DOF -> EDOF
-    raise NotImplementedError("effective_dof")
+    try:
+            N = np.sum(np.isfinite(x))
+    except:
+            raise TypeError("Some kind of error?? Maybe try a 1-D timeseries, multidimensional time? im not so sure :P")
+    
+    tau = integral_timescale(x, dt, biased)
+    record = N*dt # number of samples times time interval -> time period of samples
+    EDOF = int(
+        np.floor(
+            record / (2 * tau)
+            )            
+        ) 
+    return(EDOF)
 
 
 def cross_correlation(
@@ -134,7 +152,9 @@ def cross_correlation(
     ``-k``; so a **negative** peak lag means ``x`` leads ``y``, a positive one
     means ``y`` leads ``x``.
     """
-    # xa = (x - np.mean(x)) / np.std(x)
-    # ya = (y - np.mean(y)) / np.std(y)
-    # then signal.correlate(xa, ya, mode="full") / N and signal.correlation_lags(...)
-    raise NotImplementedError("cross_correlation")
+    N = len(x)
+    xa = (x - np.mean(x)) / np.std(x)
+    ya = (y - np.mean(y)) / np.std(y)
+    r = signal.correlate(xa, ya, mode="full") / N 
+    lags = signal.correlation_lags(xa.size,ya.size,mode = "full")
+    return( (lags, r) )

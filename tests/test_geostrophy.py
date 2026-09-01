@@ -24,7 +24,7 @@ def ts():
 
 
 def test_interior_transport_is_southward_and_finite(ts) -> None:
-    trans = interior_geostrophic_transport(ts.isel(TIME=slice(0, 2000)))
+    trans = interior_geostrophic_transport(ts)#.isel(TIME=slice(0, 2000)))
     v = trans.values
     assert np.isfinite(v).all()
     assert trans.attrs["units"] == "Sv"
@@ -32,10 +32,10 @@ def test_interior_transport_is_southward_and_finite(ts) -> None:
 
 
 def test_interior_transport_tracks_trans_umo(ts) -> None:
-    n = 2000
-    trans = interior_geostrophic_transport(ts.isel(TIME=slice(0, n)))
+    #n = 2000
+    trans = interior_geostrophic_transport(ts)#.isel(TIME=slice(0, n)))
     _, _, series = load_amoc()
-    umo = series["TRANS_UMO"][:n]
+    umo = series["TRANS_UMO"][:]
     m = np.isfinite(trans.values) & np.isfinite(umo)
     r = np.corrcoef(trans.values[m], umo[m])[0, 1]
     assert r > 0.6  # upper mid-ocean estimate tracks TRANS_UMO well

@@ -53,8 +53,15 @@ def to_teos10(
     CT : numpy.ndarray
         Conservative temperature (degC).
     """
-    SA = gsw.SA_from_SP(np.asarray(salt, float), np.asarray(pres, float), lon, lat)
-    CT = gsw.CT_from_t(SA, np.asarray(temp, float), np.asarray(pres, float))
+    n_time = len(temp[0,:])
+    n_pres = len(temp[:,0])
+    SA = np.empty([n_time,n_pres])
+    CT = np.empty([n_time,n_pres])
+    for i in range(n_time):
+        SA[i] = gsw.SA_from_SP(np.asarray(salt[:,i], float), np.asarray(pres, float), lon, lat)
+        CT[i] = gsw.CT_from_t(SA[i], np.asarray(temp[:,i], float), np.asarray(pres, float))
+    # SA = gsw.SA_from_SP(np.asarray(salt, float), np.asarray(pres, float), lon, lat)
+    # CT = gsw.CT_from_t(SA, np.asarray(temp, float), np.asarray(pres, float))
     return SA, CT
 
 
@@ -176,3 +183,5 @@ def interior_geostrophic_transport(
             "integration_depth_m": z_max,
         },
     )
+
+    
