@@ -40,8 +40,6 @@ def summary_stats(values: np.ndarray) -> dict[str, float]:
     -----
     Use the NaN-aware reductions (``numpy.nanmean`` etc.) so gaps do not poison the
     statistics. Decide and document whether ``std`` uses ``ddof=0`` or ``1``.
-
-    TODO (student): implement and return the dictionary.
     """
 
     n = len(values)
@@ -184,5 +182,7 @@ def decorrelation_timescale(
 
     TODO (student): implement the autocovariance, the zero-crossing integral, and
     return ``(integral_scale, ndof)``.
+
+    ### this function is not used here!
     """
     raise NotImplementedError("Implement the integral-timescale d.o.f. estimate.")
