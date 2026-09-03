@@ -9,6 +9,7 @@ from __future__ import annotations
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from scipy import signal
+
 from .analysis import detrending
 
 
@@ -36,8 +37,9 @@ def autocorr(x: ArrayLike, biased: bool = True) -> NDArray[np.float64]:
     at large lag; the biased tail is damped toward zero while the unbiased tail
     fans out. See the lecture figure comparing white noise, AR(1), and a sinusoid.
     """
+
     try:
-        d = detrending(d, d["TIME"])
+        d = detrending(x, x["TIME"])
     except:
         print("no xarray type, possibly already detrended")
     d = np.asarray(x, dtype=float)
@@ -82,7 +84,6 @@ def integral_timescale(x: ArrayLike, dt: float, biased: bool = True) -> float:
     return tau
 
 
-
 def effective_dof(x: ArrayLike, dt: float, biased: bool = True) -> int:
     """Effective (equivalent) degrees of freedom ``EDOF`` for a series.
 
@@ -105,23 +106,21 @@ def effective_dof(x: ArrayLike, dt: float, biased: bool = True) -> int:
     -------
     int
         ``EDOF = record / (2 T*)``, where ``record = N * dt``.
-    
-    I floored the number such that it doesnt return a float, 
+
+    I floored the number such that it doesnt return a float,
     I do not see the reason why a float is necessary in a DOF count.
     """
     try:
-            N = np.sum(np.isfinite(x))
+        N = np.sum(np.isfinite(x))
     except:
-            raise TypeError("Some kind of error?? Maybe try a 1-D timeseries, multidimensional time? im not so sure :P")
-    
+        raise TypeError(
+            "Some kind of error?? Maybe try a 1-D timeseries, multidimensional time? im not so sure :P"
+        )
+
     tau = integral_timescale(x, dt, biased)
-    record = N*dt # number of samples times time interval -> time period of samples
-    EDOF = int(
-        np.floor(
-            record / (2 * tau)
-            )            
-        ) 
-    return(EDOF)
+    record = N * dt  # number of samples times time interval -> time period of samples
+    EDOF = int(np.floor(record / (2 * tau)))
+    return EDOF
 
 
 def cross_correlation(
@@ -155,6 +154,6 @@ def cross_correlation(
     N = len(x)
     xa = (x - np.mean(x)) / np.std(x)
     ya = (y - np.mean(y)) / np.std(y)
-    r = signal.correlate(xa, ya, mode="full") / N 
-    lags = signal.correlation_lags(xa.size,ya.size,mode = "full")
-    return( (lags, r) )
+    r = signal.correlate(xa, ya, mode="full") / N
+    lags = signal.correlation_lags(xa.size, ya.size, mode="full")
+    return (lags, r)

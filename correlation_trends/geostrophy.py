@@ -20,11 +20,12 @@ adjustment, which removes variance this simple estimate retains.
 from __future__ import annotations
 
 import os
+
+import gsw
 import numpy as np
 import xarray as xr
 from numpy.typing import ArrayLike, NDArray
 from scipy.integrate import trapezoid
-import gsw
 
 # (temperature var, salinity var, representative longitude) for each boundary
 WEST = ("TEMP_WEST", "PSAL_WEST", -76.74)
@@ -54,13 +55,17 @@ def to_teos10(
     CT : numpy.ndarray
         Conservative temperature (degC).
     """
-    n_time = len(temp[0,:])
-    n_pres = len(temp[:,0])
-    SA = np.empty([n_time,n_pres])
-    CT = np.empty([n_time,n_pres])
+    n_time = len(temp[0, :])
+    n_pres = len(temp[:, 0])
+    SA = np.empty([n_time, n_pres])
+    CT = np.empty([n_time, n_pres])
     for i in range(n_time):
-        SA[i] = gsw.SA_from_SP(np.asarray(salt[:,i], float), np.asarray(pres, float), lon, lat)
-        CT[i] = gsw.CT_from_t(SA[i], np.asarray(temp[:,i], float), np.asarray(pres, float))
+        SA[i] = gsw.SA_from_SP(
+            np.asarray(salt[:, i], float), np.asarray(pres, float), lon, lat
+        )
+        CT[i] = gsw.CT_from_t(
+            SA[i], np.asarray(temp[:, i], float), np.asarray(pres, float)
+        )
     # SA = gsw.SA_from_SP(np.asarray(salt, float), np.asarray(pres, float), lon, lat)
     # CT = gsw.CT_from_t(SA, np.asarray(temp, float), np.asarray(pres, float))
     return SA, CT
@@ -185,7 +190,50 @@ def interior_geostrophic_transport(
         },
     )
 
-def geostrophy_jakob(ts, pref = 4820.0, z_max = 1100.0, lat = 26.5, west_lon = -76.74, east_lon =  16.23, i_want_to_use_saved_files = True):
+
+def geostrophy_jakob(
+    ts,
+    pref=4820.0,
+    z_max=1100.0,
+    lat=26.5,
+    west_lon=-76.74,
+    east_lon=16.23,
+    i_want_to_use_saved_files=True,
+) -> xr.DataArray:
+    """Upper mid-ocean geostrophic transport from boundary T/S profiles.
+
+    Follows the RAPID definition (McCarthy et al., 2015): the mid-ocean
+    geostrophic transport per unit depth, ``(phi_east - phi_west) / f`` referenced
+    to ``p_ref``, integrated **from the surface down to the depth of the AMOC
+    maximum** (``z_max``, ~1100 m when northward AAIW is present). Integrating the
+    full water column instead would fold in the deep NADW/AABW and is *not* the
+    upper mid-ocean transport.
+
+    Parameters
+    ----------
+    ds : xarray.Dataset
+        Standardised ``ts_gridded`` dataset (``TEMP_WEST``, ``PSAL_WEST``,
+        ``TEMP_EAST``, ``PSAL_EAST`` on ``PRESSURE`` x ``TIME``).
+    pref : float, default 4820.0
+        Reference pressure (level of no motion), the deepest common level.
+    lat : float, default 26.5
+        Latitude for the Coriolis parameter.
+    z_max : float, default 1100.0
+        Depth (m) of the upper integration limit -- the depth of the AMOC
+        maximum. RAPID uses a time-varying value (~1100 m with AAIW, ~700 m
+        without); a fixed value is a good approximation for teaching.
+    west_lon, east_lon : float
+        longitude coordinates of boundaries, default valid for RAPID (26°N)
+    i_want_to_use_saved_files : bool, default True
+        whether to use/write .npy files after the TEOS conversion,
+        TEOS conversion of the whole timeseries and vertical column takes about 5 mins
+        (on my local machine)
+
+    Returns
+    -------
+    xarray.DataArray
+        Transport (Sv) on the ``TIME`` coordinate. Negative is southward.
+    """
     # define the vertical pressure levels
     p = ts.PRESSURE.values
 
@@ -193,9 +241,13 @@ def geostrophy_jakob(ts, pref = 4820.0, z_max = 1100.0, lat = 26.5, west_lon = -
     f = gsw.f(lat)
 
     # converting to TEOS-10 units
-    # check if the data files exist and read them, if they dont exist, 
+    # check if the data files exist and read them, if they dont exist,
     # convert and write .npy files for them to make the calculation quicker (takes around 5 mins for me locally)
-    if os.path.isfile("../data/TS_WEST.npy") and os.path.isfile("../data/TS_EAST.npy") and i_want_to_use_saved_files:
+    if (
+        os.path.isfile("../data/TS_WEST.npy")
+        and os.path.isfile("../data/TS_EAST.npy")
+        and i_want_to_use_saved_files
+    ):
         TS_WEST = np.load("../data/TS_WEST.npy")
         TS_EAST = np.load("../data/TS_EAST.npy")
     else:
@@ -205,43 +257,44 @@ def geostrophy_jakob(ts, pref = 4820.0, z_max = 1100.0, lat = 26.5, west_lon = -
         T_WEST = _fill_profiles(ts.TEMP_WEST.values, p)
         T_EAST = _fill_profiles(ts.TEMP_EAST.values, p)
         # create data directory in the repo if it doesnt exist (not necessary with my gitignore settings but still cleaner)
-        os.makedirs("../data", exist_ok = True) 
-        TS_WEST = to_teos10(temp=T_WEST, salt = PSAL_WEST, pres = p, lat = lat, lon = west_lon)
-        TS_EAST = to_teos10(temp=T_EAST, salt = PSAL_EAST, pres = p, lat = lat, lon = east_lon)
+        os.makedirs("../data", exist_ok=True)
+        TS_WEST = to_teos10(temp=T_WEST, salt=PSAL_WEST, pres=p, lat=lat, lon=west_lon)
+        TS_EAST = to_teos10(temp=T_EAST, salt=PSAL_EAST, pres=p, lat=lat, lon=east_lon)
         if i_want_to_use_saved_files:
-            np.save("../data/TS_WEST.npy",TS_WEST)
-            np.save("../data/TS_EAST.npy",TS_EAST)
-    
+            np.save("../data/TS_WEST.npy", TS_WEST)
+            np.save("../data/TS_EAST.npy", TS_EAST)
+
     # calculate the dynamic heights from converted profiles
-    dynamic_height_west_nan = dynamic_height(TS_WEST[0].T,TS_WEST[1].T,p,pref) # have to transpose the arrays, otherwise the pressure is on the wrong axis
-    dynamic_height_east_nan = dynamic_height(TS_EAST[0].T,TS_EAST[1].T,p,pref)
+    dynamic_height_west_nan = dynamic_height(
+        TS_WEST[0].T, TS_WEST[1].T, p, pref
+    )  # have to transpose the arrays, otherwise the pressure is on the wrong axis
+    dynamic_height_east_nan = dynamic_height(TS_EAST[0].T, TS_EAST[1].T, p, pref)
     # linearly interpolate the dynamic height profile time series
-    dynamic_height_west = _fill_profiles(dynamic_height_west_nan,p)
-    dynamic_height_east = _fill_profiles(dynamic_height_east_nan,p)
-    
+    dynamic_height_west = _fill_profiles(dynamic_height_west_nan, p)
+    dynamic_height_east = _fill_profiles(dynamic_height_east_nan, p)
+
     psi_difference = dynamic_height_east - dynamic_height_west
 
-    # zonally-integrated geostrophic transport per unit depth, m^2/s 
-    thermal_wind = psi_difference / f 
+    # zonally-integrated geostrophic transport per unit depth, m^2/s
+    thermal_wind = psi_difference / f
 
     # integrate until reference pressure
     depth = -gsw.z_from_p(p, lat)  # m, increasing downward
     relevant_depths = depth <= z_max
-    transport = trapezoid(y = thermal_wind[relevant_depths,:],x = depth[relevant_depths],axis = 0)
-    transport = transport / 1e6 # converted to Sverdrup unit
+    transport = trapezoid(
+        y=thermal_wind[relevant_depths, :], x=depth[relevant_depths], axis=0
+    )
+    transport = transport / 1e6  # converted to Sverdrup unit
 
     return xr.DataArray(
-            transport,
-            coords={"TIME": ts["TIME"].values},
-            dims="TIME",
-            name="interior_geostrophic_transport",
-            attrs={
-                "units": "Sv",
-                "long_name": "Upper mid-ocean geostrophic transport",
-                "reference_pressure": pref,
-                "integration_depth_m": z_max,
-            },
+        transport,
+        coords={"TIME": ts["TIME"].values},
+        dims="TIME",
+        name="interior_geostrophic_transport",
+        attrs={
+            "units": "Sv",
+            "long_name": "Upper mid-ocean geostrophic transport",
+            "reference_pressure": pref,
+            "integration_depth_m": z_max,
+        },
     )
-    
-
-    

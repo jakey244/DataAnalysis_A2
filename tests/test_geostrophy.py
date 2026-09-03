@@ -40,6 +40,7 @@ def ts():
 #     r = np.corrcoef(trans.values[m], umo[m])[0, 1]
 #     assert r > 0.6  # upper mid-ocean estimate tracks TRANS_UMO well
 
+
 def test_interior_transport_is_southward_and_finite_for_jakob_function(ts) -> None:
     trans = geostrophy_jakob(ts)
     v = trans.values

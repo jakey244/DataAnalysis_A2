@@ -65,6 +65,7 @@ def fit_trend(t: ArrayLike, x: ArrayLike) -> tuple[float, float]:
     slope, intercept = np.polyfit(np.asarray(t, float), np.asarray(x, float), 1)
     return float(slope), float(intercept)
 
+
 def trend_with_significance(t: ArrayLike, x: ArrayLike, dt: float) -> TrendResult:
     """Slope, its standard error, ``slope/SE``, and autocorrelation-aware p-values.
 
@@ -98,7 +99,7 @@ def trend_with_significance(t: ArrayLike, x: ArrayLike, dt: float) -> TrendResul
     data about the line. Significant at 95% means ``|slope| > ~1.96 * SE``.
     """
     try:
-        x = x.values    
+        x = x.values
     except:
         print("Not xarray format")
     notnan = np.isfinite(x)
@@ -106,47 +107,50 @@ def trend_with_significance(t: ArrayLike, x: ArrayLike, dt: float) -> TrendResul
     t = t[notnan]
     N = x.size
     slope, intercept = fit_trend(t, x)
-    #print(slope,intercept)
+    # print(slope,intercept)
     resid = x - (slope * t + intercept)
-    #print(resid)
+    # print(resid)
     N_eff = effective_dof(resid, dt)
-    stderr = np.sqrt( np.sum(resid**2)/(N-2) / np.sum((t - t.mean())**2) )
+    stderr = np.sqrt(np.sum(resid**2) / (N - 2) / np.sum((t - t.mean()) ** 2))
     effective_stderr = stderr * np.sqrt(N / N_eff)
-    t_naive = slope/stderr
-    t_eff = slope/effective_stderr
+    t_naive = slope / stderr
+    t_eff = slope / effective_stderr
     p_naive = 2 * stats.t.sf(np.abs(t_naive), N_eff * 2)
     p_eff = 2 * stats.t.sf(np.abs(t_eff), N_eff)
 
     res = TrendResult(
-        slope = slope,
-        intercept = intercept,
-        se = stderr,
-        se_eff = effective_stderr,
-        p_naive = p_naive,
-        p_eff = p_eff,
-        n_eff = N_eff,
-        t_naive = t_naive,
-        t_eff = t_eff
+        slope=slope,
+        intercept=intercept,
+        se=stderr,
+        se_eff=effective_stderr,
+        p_naive=p_naive,
+        p_eff=p_eff,
+        n_eff=N_eff,
+        t_naive=t_naive,
+        t_eff=t_eff,
     )
-    return(res)
+    return res
 
-def confband(t: ArrayLike, x: ArrayLike, dt: float, alpha: float = 0.05) -> tuple[np.ndarray, np.ndarray]:
-    trend_result = trend_with_significance(t,x,dt)
+
+def confband(
+    t: ArrayLike, x: ArrayLike, dt: float, alpha: float = 0.05
+) -> tuple[np.ndarray, np.ndarray]:
+    trend_result = trend_with_significance(t, x, dt)
     slope = trend_result.slope
     intercept = trend_result.intercept
     slope_se = trend_result.se_eff  # standard error of the slope
     EDOF = trend_result.n_eff
     n = t.size
     t_mean = t.mean()
-    ss_t = ((t - t_mean)**2).sum()
+    ss_t = ((t - t_mean) ** 2).sum()
 
     x_fit = intercept + slope * t
 
     # t critical value
-    t_crit = stats.t.ppf(1 - alpha/2, df=EDOF)
+    t_crit = stats.t.ppf(1 - alpha / 2, df=EDOF)
 
     # SE of the mean response using slope_se
-    se_mean = slope_se * np.sqrt(ss_t) * np.sqrt(1/n + (t - t_mean)**2 / ss_t)
+    se_mean = slope_se * np.sqrt(ss_t) * np.sqrt(1 / n + (t - t_mean) ** 2 / ss_t)
 
     ci_lower = x_fit - t_crit * se_mean
     ci_upper = x_fit + t_crit * se_mean

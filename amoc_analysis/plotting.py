@@ -162,12 +162,12 @@ def show_attributes(data: Union[str, xr.Dataset]) -> DataFrame:
 
 
 def plot_time_series(
-    ds: xr.Dataset, 
-    var: str, 
+    ds: xr.Dataset,
+    var: str,
     title: str = None,
     ylabel: str = None,
     color: str = "blue",
-    figsize: Tuple[int, int] = (12, 6)
+    figsize: Tuple[int, int] = (12, 6),
 ) -> Tuple[Any, Any]:
     """Plot a simple time series from an xarray Dataset.
 
@@ -192,26 +192,26 @@ def plot_time_series(
         Figure and axis objects from matplotlib.
     """
     da = ds[var]
-    
+
     fig, ax = plt.subplots(figsize=figsize)
     ax.plot(ds.TIME, da, color=color, linewidth=1.0)
-    
+
     # Set title
     if title is None:
         title = da.attrs.get("long_name", var)
     ax.set_title(title)
-    
+
     # Set ylabel
     if ylabel is None:
         label = da.attrs.get("long_name", var)
         units = da.attrs.get("units", "")
         ylabel = f"{label} [{units}]" if units else label
     ax.set_ylabel(ylabel)
-    
+
     ax.set_xlabel("Time")
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.grid(True, alpha=0.3)
     plt.tight_layout()
-    
+
     return fig, ax

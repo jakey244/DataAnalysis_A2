@@ -8,12 +8,14 @@ month-of-year ``groupby``: build the monthly climatology, then subtract it.
 
 from __future__ import annotations
 
-import xarray as xr
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import xarray as xr
 
 
-def seasonal_climatology(da: xr.DataArray, group: str = "TIME.month", mode: str = "mean") -> xr.DataArray:
+def seasonal_climatology(
+    da: xr.DataArray, group: str = "TIME.month", mode: str = "mean"
+) -> xr.DataArray:
     """Monthly climatology: the mean annual cycle.
 
     Parameters
@@ -35,7 +37,7 @@ def seasonal_climatology(da: xr.DataArray, group: str = "TIME.month", mode: str 
         out = da.groupby(group).mean()
     elif mode == "median":
         out = da.groupby(group).median()
-    else: 
+    else:
         raise ValueError
     return out
 
@@ -68,18 +70,19 @@ def remove_seasonal_cycle(da: xr.DataArray, group: str = "TIME.month") -> xr.Dat
     """
     clim = seasonal_climatology(da, group)
     deseasonalized = da.groupby(group) - clim + da.mean()
-    return(deseasonalized)
+    return deseasonalized
+
 
 def plot_seasonal_cycle(ds):
     clim = seasonal_climatology(ds)
-    
+
     months = np.arange(12) + 1
-    plt.figure(figsize=[8,4])
+    plt.figure(figsize=[8, 4])
     plt.plot(months, clim.values)
     plt.grid()
     plt.xlabel("Month")
-    plt.xticks(np.arange(12)+1, np.arange(12)+1)
-    try: 
+    plt.xticks(np.arange(12) + 1, np.arange(12) + 1)
+    try:
         plt.ylabel(f"{ds.name} transport (Sv)")
     except:
         plt.ylabel("Transport (Sv)")

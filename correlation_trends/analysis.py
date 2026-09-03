@@ -8,9 +8,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-
 import xarray as xr
-
 from scipy.stats import linregress
 
 
@@ -45,27 +43,28 @@ def summary_stats(values: np.ndarray) -> dict[str, float]:
     n = len(values)
     n_missing = int(np.isnan(values).sum().values)
     mean = np.nanmean(values)
-    std = np.nanstd(values,ddof = 0) # ddof = 0
+    std = np.nanstd(values, ddof=0)  # ddof = 0
     median = np.nanmedian(values)
     min = np.nanmin(values)
     max = np.nanmax(values)
     range = max - min
 
     statistics = {
-        "n" : n,
-        "n_missing" : n_missing,
-        "mean" : mean,
-        "std" : std,
-        "median" : median,
-        "min" : min,
-        "max" : max,
-        "range" : range
+        "n": n,
+        "n_missing": n_missing,
+        "mean": mean,
+        "std": std,
+        "median": median,
+        "min": min,
+        "max": max,
+        "range": range,
     }
-    return (statistics)
+    return statistics
+
 
 def detrending(values: np.ndarray, time: np.ndarray) -> xr.DataArray:
     """
-    Takes a timeseries and returns the detrended series
+    Takes a timeseries and returns the detrended series.
     """
     d = np.asarray(values, dtype=float)
     predictor = np.arange(len(d))
@@ -73,21 +72,15 @@ def detrending(values: np.ndarray, time: np.ndarray) -> xr.DataArray:
     d = d[notnan]
     predictor = predictor[notnan]
     time = time[notnan]
-    linregress_stats = linregress(predictor,d)
+    linregress_stats = linregress(predictor, d)
     intercept = linregress_stats.intercept
     slope = linregress_stats.slope
     out = d - d.mean()
     for i in range(len(d)):
-        out[i] = d[i] - intercept - slope*predictor[i]
+        out[i] = d[i] - intercept - slope * predictor[i]
 
-    out_xarray = xr.DataArray(
-        data = out,
-        dims = ["TIME"],
-        coords = dict(
-            TIME = time
-        )
-    )
-    return(out_xarray)
+    out_xarray = xr.DataArray(data=out, dims=["TIME"], coords=dict(TIME=time))
+    return out_xarray
 
 
 def seasonal_cycle(
@@ -143,6 +136,7 @@ def seasonal_cycle(
     deseasonalized = values - seasonal_means
 
     return clim, deseasonalized, seasonal_means, indexer
+
 
 def decorrelation_timescale(
     values: np.ndarray,

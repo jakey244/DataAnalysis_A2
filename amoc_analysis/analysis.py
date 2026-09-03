@@ -128,6 +128,7 @@ def apply_defaults(default_source: str, default_files: List[str]) -> Callable:
         A wrapped function with defaults applied.
 
     """
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(
@@ -274,6 +275,7 @@ def download_file(url: str, dest_folder: str, redownload: bool = False) -> str:
     elif parsed_url.scheme == "ftp":
         # FTP download
         from ftplib import FTP
+
         with FTP(parsed_url.netloc) as ftp:
             ftp.login()  # anonymous login
             with open(local_filename, "wb") as f:

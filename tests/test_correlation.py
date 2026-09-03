@@ -7,9 +7,9 @@ import pytest
 
 from correlation_trends.correlation import (
     autocorr,
-    integral_timescale,
-    effective_dof,
     cross_correlation,
+    effective_dof,
+    integral_timescale
 )
 
 
@@ -52,7 +52,9 @@ def test_effective_dof_is_half_dof_and_smaller_for_red() -> None:
     red = _ar1(n, 0.9, seed=5)
     # EDOF = record / (2 T*) = DOF / 2
     tstar = integral_timescale(white, dt)
-    assert effective_dof(white, dt) == pytest.approx(np.floor((n * dt) / (2 * tstar))) # i changed this test such that it also includes the floor
+    assert effective_dof(white, dt) == pytest.approx(
+        np.floor((n * dt) / (2 * tstar))
+    )  # i changed this test such that it also includes the floor
     assert effective_dof(red, dt) < effective_dof(white, dt)
 
 
@@ -67,3 +69,5 @@ def test_cross_correlation_recovers_known_lag() -> None:
     # x leads y => peak at negative lag (see sign convention in the docstring)
     assert lags[np.argmax(r)] == -shift
     assert r.max() == pytest.approx(1.0, abs=0.02)
+
+

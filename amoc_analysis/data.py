@@ -311,23 +311,25 @@ def save_dataset(
 
     """
     output_path = Path(output_file)
-    
+
     if output_path.exists():
         if delete_existing:
             output_path.unlink()
         elif prompt_user:
             response = input(f"File {output_path} exists. Overwrite? (y/n): ")
-            if response.lower() not in ['y', 'yes']:
+            if response.lower() not in ["y", "yes"]:
                 print("Save cancelled.")
                 return False
             output_path.unlink()
         else:
-            print(f"File {output_path} exists and delete_existing=False. Skipping save.")
+            print(
+                f"File {output_path} exists and delete_existing=False. Skipping save."
+            )
             return False
-    
+
     # Ensure directory exists
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     # Save the dataset
     ds.to_netcdf(output_path)
     print(f"Dataset saved to {output_path}")
