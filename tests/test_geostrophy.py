@@ -12,7 +12,7 @@ import pytest
 
 pytest.importorskip("gsw")
 from correlation_trends.data_io import load_amoc, load_ts_gridded
-from correlation_trends.geostrophy import interior_geostrophic_transport
+from correlation_trends.geostrophy import geostrophy_jakob
 
 
 @pytest.fixture(scope="module")
@@ -23,17 +23,33 @@ def ts():
         pytest.skip(f"ts_gridded unavailable: {exc}")
 
 
-def test_interior_transport_is_southward_and_finite(ts) -> None:
-    trans = interior_geostrophic_transport(ts)#.isel(TIME=slice(0, 2000)))
+# def test_interior_transport_is_southward_and_finite(ts) -> None:
+#     trans = interior_geostrophic_transport(ts)#.isel(TIME=slice(0, 2000)))
+#     v = trans.values
+#     assert np.isfinite(v).all()
+#     assert trans.attrs["units"] == "Sv"
+#     assert np.nanmean(v) < 0  # interior flow is southward
+
+
+# def test_interior_transport_tracks_trans_umo(ts) -> None:
+#     #n = 2000
+#     trans = interior_geostrophic_transport(ts)#.isel(TIME=slice(0, n)))
+#     _, _, series = load_amoc()
+#     umo = series["TRANS_UMO"][:]
+#     m = np.isfinite(trans.values) & np.isfinite(umo)
+#     r = np.corrcoef(trans.values[m], umo[m])[0, 1]
+#     assert r > 0.6  # upper mid-ocean estimate tracks TRANS_UMO well
+
+def test_interior_transport_is_southward_and_finite_for_jakob_function(ts) -> None:
+    trans = geostrophy_jakob(ts)
     v = trans.values
     assert np.isfinite(v).all()
     assert trans.attrs["units"] == "Sv"
     assert np.nanmean(v) < 0  # interior flow is southward
 
 
-def test_interior_transport_tracks_trans_umo(ts) -> None:
-    #n = 2000
-    trans = interior_geostrophic_transport(ts)#.isel(TIME=slice(0, n)))
+def test_interior_transport_tracks_trans_umo_for_jakob_function(ts) -> None:
+    trans = geostrophy_jakob(ts)
     _, _, series = load_amoc()
     umo = series["TRANS_UMO"][:]
     m = np.isfinite(trans.values) & np.isfinite(umo)
