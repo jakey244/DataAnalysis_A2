@@ -71,7 +71,7 @@ def detrending(values: np.ndarray, time: np.ndarray) -> xr.DataArray:
     notnan = np.isfinite(d)
     d = d[notnan]
     predictor = predictor[notnan]
-    time = time[notnan]
+    
     linregress_stats = linregress(predictor, d)
     intercept = linregress_stats.intercept
     slope = linregress_stats.slope
@@ -79,6 +79,7 @@ def detrending(values: np.ndarray, time: np.ndarray) -> xr.DataArray:
     for i in range(len(d)):
         out[i] = d[i] - intercept - slope * predictor[i]
 
+    time = time[notnan]
     out_xarray = xr.DataArray(data=out, dims=["TIME"], coords=dict(TIME=time))
     return out_xarray
 
