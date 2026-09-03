@@ -129,3 +129,25 @@ def trend_with_significance(t: ArrayLike, x: ArrayLike, dt: float) -> TrendResul
         t_eff = t_eff
     )
     return(res)
+
+def confband(t: ArrayLike, x: ArrayLike, dt: float, alpha: float = 0.05) -> tuple[np.ndarray, np.ndarray]:
+    trend_result = trend_with_significance(t,x,dt)
+    slope = trend_result.slope
+    intercept = trend_result.intercept
+    slope_se = trend_result.se_eff  # standard error of the slope
+    EDOF = trend_result.n_eff
+    n = t.size
+    t_mean = t.mean()
+    ss_t = ((t - t_mean)**2).sum()
+
+    x_fit = intercept + slope * t
+
+    # t critical value
+    t_crit = stats.t.ppf(1 - alpha/2, df=EDOF)
+
+    # SE of the mean response using slope_se
+    se_mean = slope_se * np.sqrt(ss_t) * np.sqrt(1/n + (t - t_mean)**2 / ss_t)
+
+    ci_lower = x_fit - t_crit * se_mean
+    ci_upper = x_fit + t_crit * se_mean
+    return ci_lower, ci_upper
