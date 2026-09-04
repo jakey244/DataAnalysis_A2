@@ -155,3 +155,31 @@ def confband(
     ci_lower = x_fit - t_crit * se_mean
     ci_upper = x_fit + t_crit * se_mean
     return ci_lower, ci_upper
+
+def confband_not_timeseries(
+    x: ArrayLike, y: ArrayLike, alpha: float = 0.05
+) -> tuple[np.ndarray, np.ndarray]:
+    trend_result = stats.linregress(x,y)
+    slope = trend_result.slope
+    intercept = trend_result.intercept
+    EDOF = np.min(
+        [effective_dof(x,dt = 0.5), effective_dof(y,dt = 0.5),]
+        )
+    print(EDOF)
+    N = x.size
+    slope_se = trend_result.stderr  * np.sqrt(N / EDOF)  # standard error of the slope
+    x_mean = x.mean()
+    ss_x = ((x - x_mean) ** 2).sum()
+
+    y_fit = intercept + slope * x
+
+    # t critical value
+    t_crit = stats.t.ppf(1 - alpha / 2, df=EDOF)
+
+    # SE of the mean response using slope_se
+    se_mean = slope_se * np.sqrt(ss_x) * np.sqrt(1 / N + (x - x_mean) ** 2 / ss_x)
+
+    ci_lower = y_fit - t_crit * se_mean
+    ci_upper = y_fit + t_crit * se_mean
+    return ci_lower, ci_upper
+
