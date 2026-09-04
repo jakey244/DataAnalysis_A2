@@ -38,6 +38,9 @@ The relationship is statistically significant at 95%.
 
 PART 2A:
 -------
+
+In this part of the assignment, we deal with seasonality of timeseries, autocorrelation and decorrelation timescale
+and subsequently statistical significance of linear trends.
 Figures MOC_seasonal_cycle.png and UMO_seasonal_cycle.png show the mean monthly seasonal cycle for the UMO and the MOC transports.
 
 Figures MOC_seasonal_cycle_comparison.png and UMO_seasonal_cycle_comparison.png show the original timeseries and the deseasonalized timeseries
@@ -54,12 +57,40 @@ For MOC, the decorrelation timescale is 18.5 days, for UMO it is 22.5 days.
 Using the decorrelation timescale, the number of effective degrees of freedom can be calculated. For MOC, EDOF = 196. For UMO, EDOF = 161.
 The effective degrees of freedom are rounded down to the nearest integer.
 
-
+Figures MOC_trend.png and UMO_trend.png show the timeseries with a linear trend included. The confidence band of the fit is calculated.
+Using the effective p value, it can be determined that the MOC trend is not significant at 95% (p = 0.08) and the UMO trend is significant at 95% (p = 0.02).
+For the significance calculation, the smaller effective degrees of freedom of the two timeseries is used.
 
 PART 2B:
 -------
-Hallo
+In this part of the assignment we deal with the cross-correlation of two timeseries, specifically Ekman and Florida current,
+and identify their lag-lead relationship.
+
+Both timeseries are published RAPID datasets (12 hourly, 10-day lowpassed) so there is no need to match the processing.
+
+Figure crosscorrelation_EKMAN_FC_seasonal.png shows the cross-correlation for each lag, for both deseasonalized and the original datasets.
+The peak lag is identified at 2.5 days.
+
+Figure correlation_trend_EKMAN_FC.png shows a scatter of Ekman and the Florida Current at their peak lag as well as a trend including a confidence band.
+
+The p value is 0.013 which means the relationship is significant at 95%, but it is not negligible.
+For the significance calculation, the smaller effective degrees of freedom of the two timeseries is used.
+
+
 
 PART 3:
 -------
-Hallo
+In this part, we redo the calculation of PART 2B but with different datasets. Specifically, we use Ekman and MOC.
+
+Figure crosscorrelation_EKMAN_MOC_seasonal.png shows the cross-correlation for each lag, for both deseasonalized and the original datasets.
+
+The peak lag is identified at 0.5 days, which should be taken with caution as 0.5 days is the temporal resolution of the timeseries.
+
+When comparing the cross-correlation in figure crosscorrelation_EKMAN_MOC_seasonal.png for the original and deseasonalized datasets,
+it can be observed that at a lag of +- 1,2,... years, the cross-correlation for the original timeseries is larger than for the deseasonalized timeseries.
+This is to be expected as the seasonal cycle introduces a yearly correlation.
+
+Figure correlation_trend_EKMAN_FC.png shows a scatter of Ekman and the Florida Current at their peak lag as well as a trend including a confidence band.
+
+The p value is negligliblysmall  which means the relationship is significant at 95%.
+For the significance calculation, the smaller effective degrees of freedom of the two timeseries is used.
