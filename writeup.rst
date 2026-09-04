@@ -88,11 +88,17 @@ Figure crosscorrelation_EKMAN_MOC_seasonal.png shows the cross-correlation for e
 
 The peak lag is identified at 0.5 days, which should be taken with caution as 0.5 days is the temporal resolution of the timeseries.
 The Ekman component leads the MOC by 0.5 days.
+
 When comparing the cross-correlation in figure crosscorrelation_EKMAN_MOC_seasonal.png for the original and deseasonalized datasets,
 it can be observed that at a lag of +- 1,2,... years, the cross-correlation for the original timeseries is larger than for the deseasonalized timeseries.
 This is to be expected as the seasonal cycle introduces a yearly correlation.
 
+This result is specifically interesting, as the figure from PART 2B does not show this. 
+The seasonality of MOC and Ekman must correlate more strongly than the seasonality of Ekman and FC.
+It can be seen in figure FC_seasonal_cycle.png that the seasonal cycle of the Florida Current is 
+smaller in magnitude compared to MOC and Ekman.
+
 Figure correlation_trend_EKMAN_FC.png shows a scatter of Ekman and the Florida Current at their peak lag as well as a trend including a confidence band.
 
-The p value is negligliblysmall  which means the relationship is significant at 95%.
+The p value is negliglibly small  which means the relationship is significant at 95%.
 For the significance calculation, the smaller effective degrees of freedom of the two timeseries is used.
