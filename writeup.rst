@@ -1,6 +1,8 @@
 WRITEUP
 =======
 
+The code and figures can be found at https://github.com/jakey244/DataAnalysis_A2/
+
 PART 1:
 -------
 In this part of the assignment, the geostrophic ocean transport at 26°N is computed from temperature
@@ -69,7 +71,7 @@ and identify their lag-lead relationship.
 Both timeseries are published RAPID datasets (12 hourly, 10-day lowpassed) so there is no need to match the processing.
 
 Figure crosscorrelation_EKMAN_FC_seasonal.png shows the cross-correlation for each lag, for both deseasonalized and the original datasets.
-The peak lag is identified at 2.5 days.
+The peak lag is identified at 2.5 days. The Ekman component leads the Florida Current by 2.5 days.
 
 Figure correlation_trend_EKMAN_FC.png shows a scatter of Ekman and the Florida Current at their peak lag as well as a trend including a confidence band.
 
@@ -85,7 +87,7 @@ In this part, we redo the calculation of PART 2B but with different datasets. Sp
 Figure crosscorrelation_EKMAN_MOC_seasonal.png shows the cross-correlation for each lag, for both deseasonalized and the original datasets.
 
 The peak lag is identified at 0.5 days, which should be taken with caution as 0.5 days is the temporal resolution of the timeseries.
-
+The Ekman component leads the MOC by 0.5 days.
 When comparing the cross-correlation in figure crosscorrelation_EKMAN_MOC_seasonal.png for the original and deseasonalized datasets,
 it can be observed that at a lag of +- 1,2,... years, the cross-correlation for the original timeseries is larger than for the deseasonalized timeseries.
 This is to be expected as the seasonal cycle introduces a yearly correlation.
