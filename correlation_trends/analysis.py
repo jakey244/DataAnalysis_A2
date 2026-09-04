@@ -65,6 +65,20 @@ def summary_stats(values: np.ndarray) -> dict[str, float]:
 def detrending(values: np.ndarray, time: np.ndarray) -> xr.DataArray:
     """
     Takes a timeseries and returns the detrended series.
+
+    Parameters
+        ----------
+        values : numpy.ndarray
+            The timeseries data points
+
+        time : numpy.ndarray
+            The time grid corresponding to values
+    
+        Returns
+        -------
+        out_xarray : xr.DataArray
+            The detrended timeseries on the original time grid as an xarray Datarray.
+    
     """
     d = np.asarray(values, dtype=float)
     predictor = np.arange(len(d))

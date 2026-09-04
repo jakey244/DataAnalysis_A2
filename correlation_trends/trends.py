@@ -135,6 +135,25 @@ def trend_with_significance(t: ArrayLike, x: ArrayLike, dt: float) -> TrendResul
 def confband(
     t: ArrayLike, x: ArrayLike, dt: float, alpha: float = 0.05
 ) -> tuple[np.ndarray, np.ndarray]:
+    """Calculates upper and lower bounds of the confidence band of a linear trend on a timeseries.
+    
+        Parameters
+        ----------
+        t : array_like
+            Predictor (time), same units implied by ``dt``.
+        x : array_like
+            Response series.
+        dt : float
+            Sample spacing (present for interface symmetry; ``N_eff`` here is a
+            sample count and does not depend on ``dt``).
+        alpha: float
+            significance level
+    
+        Returns
+        -------
+        ci_lower, ci_upper : np.ndarray
+            upper and lower bounds of the confidence band of a linear trend
+    """
     trend_result = trend_with_significance(t, x, dt)
     slope = trend_result.slope
     intercept = trend_result.intercept
@@ -159,6 +178,22 @@ def confband(
 def confband_not_timeseries(
     x: ArrayLike, y: ArrayLike, alpha: float = 0.05
 ) -> tuple[np.ndarray, np.ndarray]:
+    """Calculates upper and lower bounds of the confidence band of a linear trend on data that is not a timeseries.
+        
+            Parameters
+            ----------
+            x : array_like
+                Predictor.
+            y : array_like
+                Response series.
+            alpha: float
+                significance level
+        
+            Returns
+            -------
+            ci_lower, ci_upper : np.ndarray
+                upper and lower bounds of the confidence band of a linear trend
+        """
     trend_result = stats.linregress(x,y)
     slope = trend_result.slope
     intercept = trend_result.intercept

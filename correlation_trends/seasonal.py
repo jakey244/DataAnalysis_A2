@@ -74,6 +74,18 @@ def remove_seasonal_cycle(da: xr.DataArray, group: str = "TIME.month") -> xr.Dat
 
 
 def plot_seasonal_cycle(ds):
+    """Plots the seasonal cycle calculated by remove_seasonal_cycle
+    
+        Parameters
+        ----------
+        da : xarray.DataArray
+            Series with a datetime ``TIME`` coordinate.
+        
+        Returns
+        -------
+        Nothing
+            calls matplotlib.pyplot.plot()
+    """
     clim = seasonal_climatology(ds)
 
     months = np.arange(12) + 1
